@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "generatedAt": "2026-04-21",
+  "platforms": [
+    "web",
+    "android",
+    "ios"
+  ],
+  "notes": "Offline-first production content for Flutter app.",
+  "packageFiles": [
+    "assets/content/packages/task_01.json",
+    "assets/content/packages/task_02.json",
+    "assets/content/packages/task_03.json",
+    "assets/content/packages/task_04.json",
+    "assets/content/packages/task_05.json",
+    "assets/content/packages/task_06.json",
+    "assets/content/packages/task_07.json",
+    "assets/content/packages/task_08.json",
+    "assets/content/packages/task_09.json",
+    "assets/content/packages/task_10.json",
+    "assets/content/packages/task_11.json",
+    "assets/content/packages/task_12.json",
+    "assets/content/packages/task_13.json",
+    "assets/content/packages/task_14.json",
+    "assets/content/packages/task_15.json",
+    "assets/content/packages/task_16.json",
+    "assets/content/packages/task_17.json",
+    "assets/content/packages/task_18.json",
+    "assets/content/packages/task_19.json",
+    "assets/content/packages/task_20.json",
+    "assets/content/packages/task_21.json",
+    "assets/content/packages/task_22.json",
+    "assets/content/packages/task_23.json",
+    "assets/content/packages/task_24.json",
+    "assets/content/packages/task_25.json",
+    "assets/content/packages/task_26.json",
+    "assets/content/packages/task_27.json"
+  ],
+  "importFiles": []
+}

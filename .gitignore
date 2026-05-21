@@ -1,0 +1,39 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Local deploy secrets
+deploy/.secrets/
+
+# Logs
+*.log
+server.err.log
+server.out.log
+
+# Local source materials
+*.docx
+*.pdf
+*.zip
+docx_paragraphs.txt
+ege_russian_*bank*.json
+ege_russian_from_pdf_*.json
+ru_11_2026/
+assets/content/imports/

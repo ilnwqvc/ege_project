@@ -1,0 +1,17 @@
+[Unit]
+Description=EGE Russian auth and progress API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+Environment=PORT=8088
+Environment=EGE_API_DB=/var/lib/ege-russian-app/api.sqlite3
+EnvironmentFile=-/etc/ege-russian-app/api.env
+ExecStart=/usr/bin/python3 /opt/ege-russian-app-api/auth_api.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

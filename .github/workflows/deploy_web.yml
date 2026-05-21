@@ -1,0 +1,89 @@
+name: Deploy Flutter Web
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build web release
+        run: flutter build web --release
+
+      - name: Archive release
+        run: tar -czf ege-russian-app-web.tar.gz -C build/web .
+
+      - name: Prepare SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s" "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          if [ -z "$DEPLOY_PORT" ]; then DEPLOY_PORT=22; fi
+          ssh-keyscan -p "$DEPLOY_PORT" "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload release archive
+        env:
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          if [ -z "$DEPLOY_PORT" ]; then DEPLOY_PORT=22; fi
+          scp -P "$DEPLOY_PORT" \
+            ege-russian-app-web.tar.gz \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/ege-russian-app-web-${{ github.sha }}.tar.gz"
+
+      - name: Upload API service
+        env:
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          if [ -z "$DEPLOY_PORT" ]; then DEPLOY_PORT=22; fi
+          scp -P "$DEPLOY_PORT" \
+            server/auth_api.py \
+            deploy/systemd/ege-russian-api.service \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/"
+
+      - name: Deploy on server
+        env:
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          if [ -z "$DEPLOY_PORT" ]; then DEPLOY_PORT=22; fi
+          ssh -p "$DEPLOY_PORT" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "set -euo pipefail; \
+             APP_ROOT='${{ secrets.DEPLOY_PATH }}'; \
+             RELEASE_NAME='${{ github.sha }}'; \
+             ARCHIVE_PATH='/tmp/ege-russian-app-web-${{ github.sha }}.tar.gz'; \
+             RELEASE_DIR=\"\$APP_ROOT/releases/\$RELEASE_NAME\"; \
+             CURRENT_LINK=\"\$APP_ROOT/current\"; \
+             sudo install -d -o www-data -g www-data /var/lib/ege-russian-app; \
+             sudo install -d /opt/ege-russian-app-api; \
+             sudo install -m 0755 /tmp/auth_api.py /opt/ege-russian-app-api/auth_api.py; \
+             sudo install -m 0644 /tmp/ege-russian-api.service /etc/systemd/system/ege-russian-api.service; \
+             sudo systemctl daemon-reload; \
+             sudo systemctl enable ege-russian-api; \
+             sudo systemctl restart ege-russian-api; \
+             mkdir -p \"\$APP_ROOT/releases\"; \
+             mkdir -p \"\$RELEASE_DIR\"; \
+             tar -xzf \"\$ARCHIVE_PATH\" -C \"\$RELEASE_DIR\"; \
+             ln -sfn \"\$RELEASE_DIR\" \"\$CURRENT_LINK\"; \
+             find \"\$APP_ROOT/releases\" -mindepth 1 -maxdepth 1 -type d | sort | head -n -5 | xargs -r rm -rf; \
+             rm -f \"\$ARCHIVE_PATH\" /tmp/auth_api.py /tmp/ege-russian-api.service"
